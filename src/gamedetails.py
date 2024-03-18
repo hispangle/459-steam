@@ -1,12 +1,7 @@
-from steam import Steam
 import json
 import time
 import requests
 from decouple import config
-
-KEY = config("STEAM_API_KEY")
-steam = Steam(KEY)
-
 
 BASE_DETAILS = "https://store.steampowered.com/api/appdetails"
 filters = "supported_languages,developers,price_overview,metacritic,categories,controller_support,genres,recommendations,achievements"
