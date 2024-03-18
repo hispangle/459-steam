@@ -1,7 +1,6 @@
 import json
 import time
 import requests
-from decouple import config
 
 BASE_DETAILS = "https://store.steampowered.com/api/appdetails"
 filters = "supported_languages,developers,price_overview,metacritic,categories,controller_support,genres,recommendations,achievements"
@@ -18,8 +17,7 @@ for i in range(latest + 1, 201):
     f = open("data/gameids/gameids_" + str(i) + ".json")
     games = json.load(f)    
     for j, game in enumerate(games):
-        if j % 10 == 1:
-            time.sleep(1)
+        if j % 10 == 0:
             print(j)
 
         id = game['appid']
@@ -29,7 +27,7 @@ for i in range(latest + 1, 201):
         else:
             print(request.reason)
             failedids.append(id)
-        time.sleep(2)
+        time.sleep(1.5)
         
 
     w = open("data/gamedata/game_data_" + str(i) + ".json", "w")
