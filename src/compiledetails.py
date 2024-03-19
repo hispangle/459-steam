@@ -37,7 +37,7 @@ def changedata(data: dict) -> dict:
     if 'recommendations' in data.keys(): data['recommendations'] = data['recommendations']['total']
     if 'price_overview' in data.keys():
         if data['price_overview']['currency'] in c.currencies: 
-            data['price_overview'] = c.convert(data['price_overview']['initial'], data['price_overview']['currency'], new_currency="USD") 
+            data['price_overview'] = int(c.convert(data['price_overview']['initial'], data['price_overview']['currency'], new_currency="USD"))
         else: 
             del data['price_overview']
 
