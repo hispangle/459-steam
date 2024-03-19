@@ -77,6 +77,9 @@ except:
 lasti = lastblock[0]
 lastj = lastblock[1]
 
+#git:
+#data/graphdata/dists/8
+
 #parallelize over i, j if need repeat calculations
 for i in range(lasti, numblocks):
     #get blocks
