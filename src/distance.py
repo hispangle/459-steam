@@ -1,5 +1,6 @@
 import json
 import math
+import os
 
 #computes distances of two lists
 def list_diff(info1, info2, key):
@@ -79,6 +80,10 @@ for i in range(lasti, numblocks):
     #get blocks
     fail = False
     jlow = lastj if i == lasti else i
+    try:
+        os.mkdir("data/graphdata/dists/" + str(i))
+    except:
+        print("dir: " + str(i) + " already exists")
     for j in range(jlow, numblocks):
         print(str(i) + ", " + str(j))
         block1 = num_per_block * i
@@ -123,7 +128,7 @@ for i in range(lasti, numblocks):
            break
 
         #dump distances to block file
-        blockfile = open("data/graphdata/dists/dist_" + str(i) + "_" + str(j) + ".json", "w")
+        blockfile = open("data/graphdata/dists/" + str(i) + "/dist_" + str(j) + ".json", "w")
         json.dump(blockdists, blockfile)
         blockfile.close()
 
