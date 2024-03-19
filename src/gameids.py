@@ -6,7 +6,7 @@ from decouple import config
 KEY = config("STEAM_API_KEY")
 steam = Steam(KEY)
 
-numList = 500
+numList = 50000
 last_id_str = ""
 baseURL = "https://api.steampowered.com/IStoreService/GetAppList/v1?max_results=" + str(numList) + "&key=" + KEY
 
@@ -21,9 +21,6 @@ while True:
     for app in apps:
         gameids.append(app['appid'])
     
-
-
-
     #if there are no more ids
     if len(response) == 1:
         break

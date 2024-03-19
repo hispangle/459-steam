@@ -1,61 +1,99 @@
 import json
+import time
+import math
+import requests
+
+BASE_DETAILS = "https://store.steampowered.com/api/appdetails"
+filters = "supported_languages,developers,price_overview,metacritic,categories,controller_support,genres,recommendations,achievements,release_date,platforms,publishers"
 
 #reformats some data into better/more usable forms
-def changeinfo(info):
+def changedata(data: dict) -> dict:
     #modify data into lists
-    if 'categories' in info.keys():
+    if 'categories' in data.keys():
         new_categories = []
-        for category in info['categories']:
+        for category in data['categories']:
             new_categories.append(category['id'])
-        info['categories'] = new_categories
+        data['categories'] = new_categories
   
-    if 'genres' in info.keys():
+    if 'genres' in data.keys():
         new_genres = []
-        for genre in info['genres']:
+        for genre in data['genres']:
             new_genres.append(genre['id'])
-        info['genres'] = new_genres
+        data['genres'] = new_genres
 
-    if 'platforms' in info.keys():
+    if 'platforms' in data.keys():
         new_plat = []
-        for plat, val in info['platforms'].items():
+        for plat, val in data['platforms'].items():
             if val:
                 new_plat.append(plat)
-        info['platforms'] = new_plat
+        data['platforms'] = new_plat
 
     #change to sole value
-    if 'metacritic' in info.keys(): info['metacritic'] = info['metacritic']['score'] 
-    if 'release_date' in info.keys(): info['release_date'] = info['release_data']['date'][-4:] 
-    if 'achievements' in info.keys(): info['achievements'] = info['achievements']['total'] 
-    if 'recommendations' in info.keys(): info['recommendations'] = info['recommendations']['total'] 
-    if 'price_overview' in info.keys(): info['price_overview'] = info['price_overview']['initial']
+    if 'metacritic' in data.keys(): data['metacritic'] = data['metacritic']['score'] 
+    if 'release_date' in data.keys(): data['release_date'] = data['release_date']['date'][-4:] 
+    if 'achievements' in data.keys(): data['achievements'] = data['achievements']['total'] 
+    if 'recommendations' in data.keys(): data['recommendations'] = data['recommendations']['total'] 
+    if 'price_overview' in data.keys(): data['price_overview'] = data['price_overview']['initial']
 
-    return info
+    return data
+
+try:
+    last_index = open("data/gamedata/last_index.json")
+    latest = json.load(last_index)
+    last_index.close()
+except:
+   latest = 0
+
+gameidsdata = open("data/gameids/gameids.json")
+gameids = json.load(gameidsdata)
+gameidsdata.close()
+
+print(len(gameids))
+index = 0
+for i in range(latest, len(gameids)):
+    if i % 1000 == 0:
+        gamesinfo = []
+        print(index)
+    id = gameids[i]
+    try:
+        request = requests.get(BASE_DETAILS, {"appids": str(id), "filters": filters})
+        if not request.ok: raise Exception(request.reason)
+        gamedata = request.json()[str(id)]['data']
+        if type(gamedata) is not dict: raise Exception("data not dict")
+        gamesinfo.append(changedata(gamedata))
+    except Exception as E:
+        print(E)
+    
+    if i % 1000 == -1 % 1000:
+        data = open("data/gamedata/chunks/gamedata_" + str(index) + ".json", "w")
+        json.dump(gamesinfo, data)
+        data.close()
+
+        last_index = open("data/gamedata/last_index.json")
+        latest = json.dump(index, last_index)
+        last_index.close()
+        index += 1
+    time.sleep(1.5)
+
+data = open("data/gamedata/chunks/gamedata_" + str(index) + ".json", "w")
+json.dump(gamesinfo, data)
+data.close()
 
 
-# compile all game data into one file
 allgames = {}
 allids = []
-for i in range(202):
-  try:
-    #modify games info and store info and id if possible
-    gamedata = open("data/gamedata/game_data_" + str(i) + ".json")
-    games = json.load(gamedata)
-    gamedata.close()
-    for id, info in games.items():
-      if type(info) is not dict:
-        continue
-      allgames[id] = changeinfo(info)
-      allids.append(id)
-  except Exception as E:
-    print(E)
-    break
+for i in range(math.ceil(len(gameids) / 1000)):
+    gamesdata = open("data/gamedata/chunks/gamedata_" + str(index) + ".json")
+    games = json.load(gamesdata)
+    gamesdata.close()
+    allgames.update(games)
+    for id in games.keys():
+        allids.append(id)
 
-#dump game info
-alldata = open("data/gamedata/all_gamedata.json", "w")
-json.dump(allgames, alldata)
-alldata.close()
+allgamedata = open("data/gamedata/allgamedata.json", "w")
+json.dump(allgames, allgamedata)
+allgamedata.close()
 
-#dump ids used
-allidsdata = open("data/gameids/all_usable_ids.json", "w")
+allidsdata = open("data/gamedata/allidsdata.json", "w")
 json.dump(allids, allidsdata)
 allidsdata.close()

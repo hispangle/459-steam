@@ -46,7 +46,7 @@ def calc_dist(gameinfo1, gameinfo2):
   for cost, weight in zip(costs, weights):
     dist += cost * weight
 
-  return int(100 * dist)
+  return int(100 * dist + 1)
 
 
 
@@ -60,19 +60,34 @@ allidsdata = open("data/gameids/all_usable_ids.json")
 allids = json.load(allidsdata)
 allidsdata.close()
 
+print(len(allids))
 # calculate distances by block
 num_per_block = 1000
-numblocks = math.ceil(10000 / num_per_block)
-for i in range(numblocks):
+numblocks = math.ceil(len(allids) / num_per_block)
+
+#get last block calculated
+try:
+    lastblockdata = open("data/graphdata/dists/lastblock.json")
+    lastblock = json.load(lastblockdata)
+    lastblockdata.close()
+except:
+    lastblock = [0, 0]
+lasti = lastblock[0]
+lastj = lastblock[1]
+
+
+for i in range(lasti, numblocks):
     #get blocks
     fail = False
-    for j in range(i, numblocks):
+    jlow = lastj if i == lasti else i
+    for j in range(jlow, numblocks):
+        print(str(i) + ", " + str(j))
         block1 = num_per_block * i
         block2 = num_per_block * j
         blockdists = []
 
         #calculate distances between selected blocks
-        for index1 in range(block1, block1 + num_per_block):
+        for index1 in range(block1, min(block1 + num_per_block, len(allids))):
             #get game info
             game1 = allids[index1]
 
@@ -84,7 +99,7 @@ for i in range(numblocks):
             info1 = allgames[str(game1)]
 
             
-            for index2 in range(block2, block2 + num_per_block):
+            for index2 in range(block2, min(block2 + num_per_block, len(allids))):
                 #no need to calculate distance between self
                 if index1 == index2:
                     continue
@@ -112,3 +127,8 @@ for i in range(numblocks):
         blockfile = open("data/graphdata/dists/dist_" + str(i) + "_" + str(j) + ".json", "w")
         json.dump(blockdists, blockfile)
         blockfile.close()
+
+        lastblockdata = open("data/graphdata/dists/lastblock.json", "w")
+        json.dump([i, j], lastblockdata)
+        lastblockdata.close()
+
