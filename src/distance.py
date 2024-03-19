@@ -77,7 +77,7 @@ except:
 lasti = lastblock[0]
 lastj = lastblock[1]
 
-
+#parallelize over i, j if need repeat calculations
 for i in range(lasti, numblocks):
     #get blocks
     fail = False
@@ -85,7 +85,7 @@ for i in range(lasti, numblocks):
     try:
         os.mkdir("data/graphdata/dists/" + str(i))
     except:
-        print("dir: " + str(i) + " already exists")
+        print("dir " + str(i) + " already exists")
     for j in range(jlow, numblocks):
         print(str(i) + ", " + str(j))
         block1 = num_per_block * i
