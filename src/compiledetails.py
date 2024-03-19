@@ -69,7 +69,7 @@ for i in range(latest, len(gameids)):
         json.dump(gamesinfo, data)
         data.close()
 
-        last_index = open("data/gamedata/last_index.json")
+        last_index = open("data/gamedata/last_index.json", "w")
         latest = json.dump(index, last_index)
         last_index.close()
         index += 1

@@ -19,10 +19,10 @@ def list_diff(info1, info2, key):
   return cost / (len(info1[key]) + len(info2[key]))
 
 #computes distance of two numbers
-def num_diff(info1, info2, key):
+def num_diff(info1, info2, key, div = False):
   if key not in info1.keys() or key not in info2.keys() or info1[key] == info2[key]:
     return 0
-  return 1 - min(info1[key], info2[key]) / max(info1[key], info2[key])
+  return 1 - min(info1[key], info2[key]) / max(info1[key], info2[key]) if div else abs(info1[key] - info2[key])
 
 
 #calculates distance between 2 games
@@ -34,19 +34,18 @@ def calc_dist(gameinfo1, gameinfo2):
   platcost = list_diff(gameinfo1, gameinfo2, 'platforms')
 
   metacost = num_diff(gameinfo1, gameinfo2, 'metacritic')
-  reccost = num_diff(gameinfo1, gameinfo2, 'recommendations')
+  reccost = num_diff(gameinfo1, gameinfo2, 'recommendations', True)
   datecost = num_diff(gameinfo1, gameinfo2, 'release_date')
   pricecost = num_diff(gameinfo1, gameinfo2, 'price_overview')
-  achcost = num_diff(gameinfo1, gameinfo2, 'achievements')
+  achcost = num_diff(gameinfo1, gameinfo2, 'achievements', True)
 
   #totals cost based on weights
   costs = [devcost, pubcost, genrecost, catcost, platcost, metacost, reccost, datecost, pricecost, achcost]
-  weights = [0.5, 0.5, 5, 1, 2, 0.5, 0.25, 0.1, 2.5, 0.1]
+  weights = [5, 5, 50, 10, 0.5, 0.05, 0.75, 0.20, 0.0025, 0.3]
   dist = 0
   for cost, weight in zip(costs, weights):
     dist += cost * weight
-
-  return int(100 * dist + 1)
+  return int(10 * dist + 1)
 
 
 
