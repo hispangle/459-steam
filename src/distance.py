@@ -21,7 +21,9 @@ def list_diff(info1, info2, key):
 
 #computes distance of two numbers
 def num_diff(info1, info2, key, div = False):
-  if key not in info1.keys() or key not in info2.keys() or info1[key] == info2[key]:
+  if key not in info1.keys() or key not in info2.keys():
+    return 1 if div else 10
+  if info1[key] == info2[key]:
     return 0
   return 1 - min(info1[key], info2[key]) / max(info1[key], info2[key]) if div else abs(info1[key] - info2[key])
 
@@ -71,7 +73,7 @@ try:
     lastblock = json.load(lastblockdata)
     lastblockdata.close()
 except:
-    lastblock = [0, 0]
+    lastblock = [0, -1]
 lasti = lastblock[0]
 lastj = lastblock[1]
 
@@ -79,7 +81,7 @@ lastj = lastblock[1]
 for i in range(lasti, numblocks):
     #get blocks
     fail = False
-    jlow = lastj if i == lasti else i
+    jlow = lastj + 1 if i == lasti else i
     try:
         os.mkdir("data/graphdata/dists/" + str(i))
     except:

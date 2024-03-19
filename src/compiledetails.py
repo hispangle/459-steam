@@ -2,9 +2,11 @@ import json
 import time
 import math
 import requests
+from currency_converter import CurrencyConverter
 
 BASE_DETAILS = "https://store.steampowered.com/api/appdetails"
 filters = "supported_languages,developers,price_overview,metacritic,categories,controller_support,genres,recommendations,achievements,release_date,platforms,publishers"
+c = CurrencyConverter()
 
 #reformats some data into better/more usable forms
 def changedata(data: dict) -> dict:
@@ -32,24 +34,27 @@ def changedata(data: dict) -> dict:
     if 'metacritic' in data.keys(): data['metacritic'] = data['metacritic']['score'] 
     if 'release_date' in data.keys(): data['release_date'] = data['release_date']['date'][-4:] 
     if 'achievements' in data.keys(): data['achievements'] = data['achievements']['total'] 
-    if 'recommendations' in data.keys(): data['recommendations'] = data['recommendations']['total'] 
-    if 'price_overview' in data.keys(): data['price_overview'] = data['price_overview']['initial']
+    if 'recommendations' in data.keys(): data['recommendations'] = data['recommendations']['total']
+    if 'price_overview' in data.keys():
+        if data['price_overview']['currency'] in c.currencies: 
+            data['price_overview'] = c.convert(data['price_overview']['initial'], data['price_overview']['currency'], new_currency="USD") 
+        else: 
+            del data['price_overview']
 
     return data
 
 try:
     last_index = open("data/gamedata/last_index.json")
-    latest = json.load(last_index)
+    index = json.load(last_index)
     last_index.close()
 except:
-   latest = 0
+    index = 0
 
 gameidsdata = open("data/gameids/gameids.json")
 gameids = json.load(gameidsdata)
 gameidsdata.close()
 
-print(len(gameids))
-index = 0
+latest = index * 1000
 for i in range(latest, len(gameids)):
     if i % 1000 == 0:
         gamesinfo = []
