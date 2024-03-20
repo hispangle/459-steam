@@ -32,14 +32,17 @@ def changedata(data: dict) -> dict:
 
     #change to sole value
     if 'metacritic' in data.keys(): data['metacritic'] = data['metacritic']['score'] 
-    if 'release_date' in data.keys(): data['release_date'] = data['release_date']['date'][-4:] 
+    if 'release_date' in data.keys(): 
+        if data['release_date']['coming_soon']:
+            data['release_date'] = 2024
+        else:
+            data['release_date'] = int(data['release_date']['date'][-4:])
     if 'achievements' in data.keys(): data['achievements'] = data['achievements']['total'] 
     if 'recommendations' in data.keys(): data['recommendations'] = data['recommendations']['total']
-    if 'price_overview' in data.keys():
-        if data['price_overview']['currency'] in c.currencies: 
-            data['price_overview'] = int(c.convert(data['price_overview']['initial'], data['price_overview']['currency'], new_currency="USD"))
-        else: 
-            del data['price_overview']
+    if 'price_overview' in data.keys() and data['price_overview']['currency'] in c.currencies:
+        data['price_overview'] = int(c.convert(data['price_overview']['initial'], data['price_overview']['currency'], new_currency="USD"))
+    else: 
+        data['price_overview'] = 0
 
     return data
 

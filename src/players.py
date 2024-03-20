@@ -50,6 +50,8 @@ while len(discoveredplayers) != 0:
         friends = request.json()['friendslist']['friends']
     except Exception as E:
         print(E)
+        if str(E) != "Unauthorized":
+            break
         continue
     for friend in friends:
         steamid = int(friend['steamid'])
@@ -57,7 +59,6 @@ while len(discoveredplayers) != 0:
             discoveredplayers.append(int(steamid))
     if i == num_needed:
         break
-    time.sleep(1.5)
 
 
 discovered = open("data/playerids/discovered_players.json", "w")
