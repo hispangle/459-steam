@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import joblib
 
 #computes distances of two lists
 def list_diff(info1, info2, key):
@@ -69,7 +70,7 @@ numblocks = math.ceil(len(allids) / num_per_block)
 
 #get last block calculated
 try:
-    lastblockdata = open("data/graphdata/dists/lastblock.json")
+    lastblockdata = open("data/graphdata/dists/test/lastblock.json")
     lastblock = json.load(lastblockdata)
     lastblockdata.close()
 except:
@@ -77,65 +78,47 @@ except:
 lasti = lastblock[0]
 lastj = lastblock[1]
 
-
-#parallelize over i, j if need repeat calculations
-for i in range(lasti, numblocks):
-    #get blocks
-    fail = False
+def i_calc(i):
     jlow = lastj + 1 if i == lasti else i
     try:
-        os.mkdir("data/graphdata/dists/" + str(i))
+        os.mkdir("data/graphdata/dists/test/" + str(i))
     except:
         print("dir " + str(i) + " already exists")
-    for j in range(jlow, numblocks):
-        print(str(i) + ", " + str(j))
-        block1 = num_per_block * i
-        block2 = num_per_block * j
-        blockdists = []
+    joblib.Parallel(8)(joblib.delayed(j_calc)(i, j) for j in range(jlow, numblocks))
+    return
 
-        #calculate distances between selected blocks
-        for index1 in range(block1, min(block1 + num_per_block, len(allids))):
+def j_calc(i, j):
+    print(str(i) + ", " + str(j))
+    block1 = num_per_block * i
+    block2 = num_per_block * j
+    blockdists = []
+    #calculate distances between selected blocks
+    for index1 in range(block1, min(block1 + num_per_block, len(allids))):
+    #get game info
+        game1 = allids[index1]
+        #node in block i not found
+        if str(game1) not in allgames.keys(): 
+            return
+
+        info1 = allgames[str(game1)] 
+        for index2 in range(block2, min(block2 + num_per_block, len(allids))):
+            #no need to calculate distance between self
+            if index1 == index2:
+                return
+
             #get game info
-            game1 = allids[index1]
+            game2 = allids[index2]
 
-            #node in block i not found
-            if str(game1) not in allgames.keys(): 
-                fail = True
-                break
+            #node in block j failed
+            if str(game2) not in allgames.keys(): 
+                return
 
-            info1 = allgames[str(game1)]
+            info2 = allgames[str(game2)]
+            blockdists.append(calc_dist(info1, info2))
+    #dump distances to block file
+    blockfile = open("data/graphdata/dists/test/" + str(i) + "/dist_" + str(j) + ".json", "w")
+    json.dump(blockdists, blockfile)
+    blockfile.close()
+    return
 
-            
-            for index2 in range(block2, min(block2 + num_per_block, len(allids))):
-                #no need to calculate distance between self
-                if index1 == index2:
-                    continue
-
-                #get game info
-                game2 = allids[index2]
-
-                #node in block j failed
-                if str(game2) not in allgames.keys(): 
-                    fail = True
-                    break
-
-                info2 = allgames[str(game2)]
-                blockdists.append(calc_dist(info1, info2))
-            
-            #break out of bad block
-            if fail:
-               break
-        
-        #bad block
-        if fail:
-           break
-
-        #dump distances to block file
-        blockfile = open("data/graphdata/dists/" + str(i) + "/dist_" + str(j) + ".json", "w")
-        json.dump(blockdists, blockfile)
-        blockfile.close()
-
-        lastblockdata = open("data/graphdata/dists/lastblock.json", "w")
-        json.dump([i, j], lastblockdata)
-        lastblockdata.close()
-
+joblib.Parallel(8)(joblib.delayed(i_calc)(i) for i in range(lasti, numblocks))

@@ -50,8 +50,6 @@ while len(discoveredplayers) != 0:
         friends = request.json()['friendslist']['friends']
     except Exception as E:
         print(E)
-        if str(E) != "Unauthorized":
-            break
         continue
     for friend in friends:
         steamid = int(friend['steamid'])
