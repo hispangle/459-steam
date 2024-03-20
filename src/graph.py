@@ -2,6 +2,11 @@
 # augment dists by int(dist/2 * min(1, log(f) / h) + dist/2)
 # f is numfriends
 # h is number of friends who own the game
+# expensive and probably unfeasable
+# friend graph?
+# order propagated labels based on # friends own?
+# label propagation on friend graph?
+
 from scipy import sparse 
 import json
 
@@ -30,10 +35,7 @@ allidsdata.close()
 
 for i in range(len(allids)):
     iblock = int(i / 1000)
-    adji = []
     for j in range(len(allids)):
-        if i == j:
-            continue
         jblock = int(j / 1000)
         #len - i - 1 is length of list of node
 

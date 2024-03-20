@@ -42,6 +42,8 @@ while len(discoveredplayers) != 0:
         analyzed.close()
         print(i)
     i += 1
+    if i == num_needed + 1:
+        break
     player = discoveredplayers.pop()
     analyzedplayers.append(player)
     try:
@@ -55,8 +57,7 @@ while len(discoveredplayers) != 0:
         steamid = int(friend['steamid'])
         if steamid not in analyzedplayers and steamid not in discoveredplayers:
             discoveredplayers.append(int(steamid))
-    if i == num_needed:
-        break
+    
 
 
 discovered = open("data/playerids/discovered_players.json", "w")

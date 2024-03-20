@@ -33,7 +33,7 @@ def changedata(data: dict) -> dict:
     #change to sole value
     if 'metacritic' in data.keys(): data['metacritic'] = data['metacritic']['score'] 
     if 'release_date' in data.keys(): 
-        if data['release_date']['coming_soon']:
+        if data['release_date']['coming_soon'] or data['release_date']['date'] == '':
             data['release_date'] = 2024
         else:
             data['release_date'] = int(data['release_date']['date'][-4:])
@@ -70,6 +70,8 @@ for i in range(latest, len(gameids)):
         if type(gamedata) is not dict: raise Exception("data not dict")
         gamesinfo.append(changedata(gamedata))
     except Exception as E:
+        if str(E) != "'data'":
+            print(gamedata['release_date']['date'])
         print(E)
     
     if i % 1000 == -1 % 1000:
