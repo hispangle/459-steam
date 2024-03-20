@@ -84,11 +84,10 @@ def i_calc(i):
         os.mkdir("data/graphdata/dists/test/" + str(i))
     except:
         print("dir " + str(i) + " already exists")
-    joblib.Parallel(16)(joblib.delayed(j_calc)(i, j) for j in range(jlow, numblocks))
+    joblib.Parallel(8)(joblib.delayed(j_calc)(i, j) for j in range(jlow, numblocks))
     return
 
 def j_calc(i, j):
-    print(str(i) + ", " + str(j))
     block1 = num_per_block * i
     block2 = num_per_block * j
     blockdists = {}
@@ -101,7 +100,7 @@ def j_calc(i, j):
             return
         idists = []
         info1 = allgames[str(game1)] 
-        for index2 in range(max(index1 + 1, block2), min(block2 + num_per_block, len(allids))):
+        for index2 in range(block2, min(block2 + num_per_block, len(allids))):
             #get game info
             game2 = allids[index2]
 
