@@ -1,4 +1,7 @@
 # use lanczos alg for eigen
+# augment dists by int(dist/2 * min(1, log(f) / h) + dist/2)
+# f is numfriends
+# h is number of friends who own the game
 from scipy import sparse 
 import json
 
@@ -32,6 +35,6 @@ for i in range(len(allids)):
         if i == j:
             continue
         jblock = int(j / 1000)
-
+        #len - i - 1 is length of list of node
 
 
