@@ -84,14 +84,14 @@ def i_calc(i):
         os.mkdir("data/graphdata/dists/test/" + str(i))
     except:
         print("dir " + str(i) + " already exists")
-    joblib.Parallel(8)(joblib.delayed(j_calc)(i, j) for j in range(jlow, numblocks))
+    joblib.Parallel(16)(joblib.delayed(j_calc)(i, j) for j in range(jlow, numblocks))
     return
 
 def j_calc(i, j):
     print(str(i) + ", " + str(j))
     block1 = num_per_block * i
     block2 = num_per_block * j
-    blockdists = []
+    blockdists = {}
     #calculate distances between selected blocks
     for index1 in range(block1, min(block1 + num_per_block, len(allids))):
     #get game info
@@ -99,13 +99,9 @@ def j_calc(i, j):
         #node in block i not found
         if str(game1) not in allgames.keys(): 
             return
-
+        idists = []
         info1 = allgames[str(game1)] 
-        for index2 in range(block2, min(block2 + num_per_block, len(allids))):
-            #no need to calculate distance between self
-            if index1 == index2:
-                return
-
+        for index2 in range(max(index1 + 1, block2), min(block2 + num_per_block, len(allids))):
             #get game info
             game2 = allids[index2]
 
@@ -114,7 +110,8 @@ def j_calc(i, j):
                 return
 
             info2 = allgames[str(game2)]
-            blockdists.append(calc_dist(info1, info2))
+            idists.append(calc_dist(info1, info2))
+        blockdists[index1] = idists
     #dump distances to block file
     blockfile = open("data/graphdata/dists/test/" + str(i) + "/dist_" + str(j) + ".json", "w")
     json.dump(blockdists, blockfile)
