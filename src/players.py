@@ -2,7 +2,6 @@
 import json
 from decouple import config
 import requests
-import time
 
 KEY = config("STEAM_API_KEY")
 baseURL = "http://api.steampowered.com/ISteamUser/GetFriendList/v0001/"
@@ -30,6 +29,7 @@ except:
 i = 0
 save_freq = 100
 num_needed = 10000
+print(len(discoveredplayers))
 while len(discoveredplayers) != 0:
     if i % save_freq == -1 % save_freq:
         print("dump")
