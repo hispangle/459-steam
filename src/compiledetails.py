@@ -61,7 +61,7 @@ latest = index * 1000
 for i in range(latest, len(gameids)):
     if i % 1000 == 0:
         gamesinfo = []
-        print(index)
+        print(i)
     id = gameids[i]
     try:
         request = requests.get(BASE_DETAILS, {"appids": str(id), "filters": filters})

@@ -1,6 +1,9 @@
 import json
+from scipy import sparse
 import math
 import os
+import heapq
+from typing import List, Tuple
 
 #computes distances of two lists
 def list_diff(info1, info2, key):
@@ -53,7 +56,6 @@ def calc_dist(gameinfo1, gameinfo2):
 
 
 # get gamedata and ids to be used
-dists = {}
 allgamedata = open("data/gamedata/all_gamedata.json")
 allgames = json.load(allgamedata)
 allgamedata.close()
@@ -62,80 +64,43 @@ allidsdata = open("data/gameids/all_usable_ids.json")
 allids = json.load(allidsdata)
 allidsdata.close()
 
-print(len(allids))
-# calculate distances by block
-num_per_block = 1000
-numblocks = math.ceil(len(allids) / num_per_block)
+k = 50
+lowerbound = -99999999999999999
+A = sparse.lil_array((len(allids), len(allids)))
+for i in range(len(allids)):
+  if i % 100 == 0:
+    print("i:", i)
+  info1 = allgames[str(allids[i])]
+  #max heap of negative distances
+  closest: List[Tuple[float, int]] = [(lowerbound, 0)] * k
+  for j in range(len(allids)):
+    if i == j:
+      continue
+    info2 = allgames[str(allids[j])]
+    dist = calc_dist(info1, info2)
+    if dist > closest[0][0]:
+      heapq.heapreplace(closest, (-dist, j))
+  col = [pair[1] for pair in closest if pair[0] != lowerbound]
+  col.append(len(allids) - 1)
+  row = [0] * len(col)
+  data = [1] * len(col)
+  data[-1] = 0
+  entry = sparse.csr_array((data, (row, col)))
+  A[i,] = entry
 
-#get last block calculated
-try:
-    lastblockdata = open("data/graphdata/dists/lastblock.json")
-    lastblock = json.load(lastblockdata)
-    lastblockdata.close()
-except:
-    lastblock = [0, -1]
-lasti = lastblock[0]
-lastj = lastblock[1]
 
+print()
+print("A")
+print(A.nnz)
+A = A.tocsr()
+A = A + A.T
+indices = sparse.find(A)
+row = indices[0]
+col = indices[1]
+data = [1] * len(row)
+A = sparse.csr_array((data, (row, col)))
+sparse.save_npz("data/graphdata/adjacency.npz", A)
 
-#parallelize over i, j if need repeat calculations
-for i in range(lasti, numblocks):
-    #get blocks
-    fail = False
-    jlow = lastj + 1 if i == lasti else i
-    try:
-        os.mkdir("data/graphdata/dists/" + str(i))
-    except:
-        print("dir " + str(i) + " already exists")
-    for j in range(jlow, numblocks):
-        print(str(i) + ", " + str(j))
-        block1 = num_per_block * i
-        block2 = num_per_block * j
-        blockdists = []
-
-        #calculate distances between selected blocks
-        for index1 in range(block1, min(block1 + num_per_block, len(allids))):
-            #get game info
-            game1 = allids[index1]
-
-            #node in block i not found
-            if str(game1) not in allgames.keys(): 
-                fail = True
-                break
-
-            info1 = allgames[str(game1)]
-
-            
-            for index2 in range(block2, min(block2 + num_per_block, len(allids))):
-                #no need to calculate distance between self
-                if index1 == index2:
-                    continue
-
-                #get game info
-                game2 = allids[index2]
-
-                #node in block j failed
-                if str(game2) not in allgames.keys(): 
-                    fail = True
-                    break
-
-                info2 = allgames[str(game2)]
-                blockdists.append(calc_dist(info1, info2))
-            
-            #break out of bad block
-            if fail:
-               break
-        
-        #bad block
-        if fail:
-           break
-
-        #dump distances to block file
-        blockfile = open("data/graphdata/dists/" + str(i) + "/dist_" + str(j) + ".json", "w")
-        json.dump(blockdists, blockfile)
-        blockfile.close()
-
-        lastblockdata = open("data/graphdata/dists/lastblock.json", "w")
-        json.dump([i, j], lastblockdata)
-        lastblockdata.close()
-
+print()
+print("saved")
+print(A.nnz)

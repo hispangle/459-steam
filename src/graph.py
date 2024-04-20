@@ -7,18 +7,29 @@
 # order propagated labels based on # friends own?
 # label propagation on friend graph?
 
-from scipy import sparse 
+from scipy import sparse
+import numpy as np
 import json
 
-test1 = sparse.csr_array([1, 0])
-test2 = sparse.csr_array([0, 0])
+testi1 = [2, 4, 5]
+col = testi1
+row = [0] * len(col)
+data = [1] * len(col)
+print(sparse.csr_array((data, (row, col))))
+print(sparse.csr_array((data, (row, col))).todense())
+
+
+test1 = sparse.csr_array([1, 1])
+test2 = sparse.csr_array([0, 1])
+test3 = sparse.csr_array([0, 5])
 
 print(test1)
 print()
 print(test2)
 print()
 testm = sparse.vstack([test1, test2])
-print(testm)
+test4 = sparse.vstack([testm, test3])
+print(test4)
 
 print()
 print(testm[0,1])
@@ -28,15 +39,33 @@ print()
 print(testm + testm.T)
 
 
+#test all 1
+testm = testm + testm.T
+indices = sparse.find(testm)
+row = indices[0]
+col = indices[1]
+data = [1] * len(row)
+print()
+print("final")
+print(sparse.csr_array((data, (row, col))))
 
-allidsdata = open("data/gameids/all_usable_ids.json")
-allids = json.load(allidsdata)
-allidsdata.close()
+# print()
+# print(testm)
 
-for i in range(len(allids)):
-    iblock = int(i / 1000)
-    for j in range(len(allids)):
-        jblock = int(j / 1000)
-        #len - i - 1 is length of list of node
+
+# print()
+# print("test col")
+# A = sparse.lil_array((3, 2))
+# A[2,] = test3
+# print(A.tocsr())
+# allidsdata = open("data/gameids/all_usable_ids.json")
+# allids = json.load(allidsdata)
+# allidsdata.close()
+
+# for i in range(len(allids)):
+#     iblock = int(i / 1000)
+#     for j in range(len(allids)):
+#         jblock = int(j / 1000)
+#         #len - i - 1 is length of list of node
 
 

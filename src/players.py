@@ -6,11 +6,6 @@ import requests
 KEY = config("STEAM_API_KEY")
 baseURL = "http://api.steampowered.com/ISteamUser/GetFriendList/v0001/"
 
-set1 = {1, 2, 3}
-set2 = {3, 4, 5}
-
-print(set2 - set1)
-
 try:
     playerslist1 = open("data/playerids/discovered_players.json")
     discoveredplayers = json.load(playerslist1)
@@ -30,6 +25,7 @@ i = 0
 save_freq = 100
 num_needed = 10000
 print(len(discoveredplayers))
+print(len(analyzedplayers))
 while len(discoveredplayers) != 0:
     if i % save_freq == -1 % save_freq:
         print("dump")
