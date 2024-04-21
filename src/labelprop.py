@@ -29,10 +29,6 @@ allids = json.load(allidsdata)
 allidsdata.close()
 
 
-
-
-
-
 #get labelled nodes
 info = open("data/playerdata/player_info.json")
 playerinfo = json.load(info)
