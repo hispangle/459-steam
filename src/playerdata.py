@@ -10,7 +10,7 @@ baseURL = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
 
 #get discovered players
 try:
-    playerslist1 = open("data/playerids/discovered_players.json")
+    playerslist1 = open("data/playerdata/discovered_players.json")
     discoveredplayers = json.load(playerslist1)
     playerslist1.close()
 except:
@@ -18,7 +18,7 @@ except:
 
 #get analyzed players
 try:
-    analyzed = open("data/playerids/analyzed_players.json")
+    analyzed = open("data/playerdata/analyzed_players.json")
     analyzedplayers = json.load(analyzed)
     analyzed.close()
 except:

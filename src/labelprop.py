@@ -15,6 +15,8 @@ acc_vs_rec_penalty = 2
 k = 50 #(k determined by graph)
 
 
+totalplayers = 100000
+
 #calculate P
 A = sparse.load_npz("data/graphdata/adjacency.npz")
 A = A.tocsr()
@@ -95,7 +97,7 @@ def propagation(cutoff, T, acc_vs_rec_penalty):
 
     return loss
 
-bounds = {'cutoff': (0, 1), 'T': (5, 101), 'acc_vs_rec_penalty': (0.1, 10)}
+bounds = {'cutoff': (0.1, 0.9), 'T': (5, 101), 'acc_vs_rec_penalty': (0.1, 10)}
 optimizer = BayesianOptimization(
     f = propagation,
     pbounds = bounds

@@ -29,11 +29,11 @@ print(len(analyzedplayers))
 while len(discoveredplayers) != 0:
     if i % save_freq == -1 % save_freq:
         print("dump")
-        discovered = open("data/playerids/discovered_players.json", "w")
+        discovered = open("data/playerdata/discovered_players.json", "w")
         json.dump(discoveredplayers, discovered)
         discovered.close()
 
-        analyzed = open("data/playerids/analyzed_players.json", "w")
+        analyzed = open("data/playerdata/analyzed_players.json", "w")
         json.dump(analyzedplayers, analyzed)
         analyzed.close()
         print(i)
@@ -56,10 +56,10 @@ while len(discoveredplayers) != 0:
     
 
 
-discovered = open("data/playerids/discovered_players.json", "w")
+discovered = open("data/playerdata/discovered_players.json", "w")
 json.dump(discoveredplayers, discovered)
 discovered.close()
 
-analyzed = open("data/playerids/analyzed_players.json", "w")
+analyzed = open("data/playerdata/analyzed_players.json", "w")
 json.dump(analyzedplayers, analyzed)
 analyzed.close()

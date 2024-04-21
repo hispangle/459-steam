@@ -69,22 +69,12 @@ num_per_block = 1000
 numblocks = math.ceil(len(allids) / num_per_block)
 
 #get last block calculated
-try:
-    lastblockdata = open("data/graphdata/dists/test/lastblock.json")
-    lastblock = json.load(lastblockdata)
-    lastblockdata.close()
-except:
-    lastblock = [0, -1]
-lasti = lastblock[0]
-lastj = lastblock[1]
-
 def i_calc(i):
-    jlow = lastj + 1 if i == lasti else i
     try:
-        os.mkdir("data/graphdata/dists/test/" + str(i))
+        os.mkdir("data/graphdata/dists/" + str(i))
     except:
         print("dir " + str(i) + " already exists")
-    joblib.Parallel(8)(joblib.delayed(j_calc)(i, j) for j in range(jlow, numblocks))
+    joblib.Parallel(4)(joblib.delayed(j_calc)(i, j) for j in range(numblocks))
     return
 
 def j_calc(i, j):
@@ -112,9 +102,9 @@ def j_calc(i, j):
             idists.append(calc_dist(info1, info2))
         blockdists[index1] = idists
     #dump distances to block file
-    blockfile = open("data/graphdata/dists/test/" + str(i) + "/dist_" + str(j) + ".json", "w")
+    blockfile = open("data/graphdata/dists/" + str(i) + "/dist_" + str(j) + ".json", "w")
     json.dump(blockdists, blockfile)
     blockfile.close()
     return
 
-joblib.Parallel(8)(joblib.delayed(i_calc)(i) for i in range(lasti, numblocks))
+joblib.Parallel(2)(joblib.delayed(i_calc)(i) for i in range(numblocks))
