@@ -6,19 +6,19 @@ from bayes_opt import BayesianOptimization
 #Training params
 split = 0.8
 numwanted = 30
-numplayers = 100
+numplayers = 1000
 
 #ML params
 cutoff = 0.25
-T = 10
-acc_vs_rec_penalty = 2
-k = 50 #(k determined by graph)
+k = 100 #(k determined by graph)
 
 
 totalplayers = 100000
 
 #calculate P
-A = sparse.load_npz("data/gamedata/adjacency_" + str(k) + ".npz")
+parallel = ""
+parallel = "_parallel"
+A = sparse.load_npz("data/gamedata/adjacency_" + str(k) + parallel + ".npz")
 A = A.tocsr()
 D_INV= sparse.dia_array(([1/float(x) if x != 0 else 0 for x in A.sum(axis = 1)], [0]), A.shape)
 P = D_INV @ A
@@ -34,9 +34,11 @@ info = open("data/playerdata/player_info.json")
 playerinfo = json.load(info)
 info.close() 
 
+items = list(playerinfo.items())[:numplayers]
+random.shuffle(items)
 #the last 3 games are latest
 #otherwise ordered by id
-def propagation(cutoff, T, acc_vs_rec_penalty):
+def propagation(cutoff, acc_vs_rec_penalty, T = 30):
     #define label propagation
     def label(ids):
         row = ids
@@ -55,9 +57,6 @@ def propagation(cutoff, T, acc_vs_rec_penalty):
 
     recs = {}
     loss = 0
-    i = 0
-    items = list(playerinfo.items())[:numplayers]
-    #random.shuffle(items)
     for player, games in items:
         #get player data
         if player == '76561198841140464' or len(games) < 4:
@@ -86,17 +85,17 @@ def propagation(cutoff, T, acc_vs_rec_penalty):
         acc = true / float(len(test))
         recs[player] = [allids[x] for x in rec]
         numrecs = len(rec)
-        recpenalty = min(numwanted - numrecs, 0) / float(numwanted)
+        recpenalty = min(numwanted - numrecs, 0) / float(numwanted) + numwanted/float(numrecs + 0.1)
 
         #get loss
         loss += acc * acc_vs_rec_penalty + recpenalty
-
     return loss
 
-bounds = {'cutoff': (0.1, 0.9), 'T': (5, 101), 'acc_vs_rec_penalty': (0.1, 10)}
+bounds = {'cutoff': (0, 1), 'acc_vs_rec_penalty': (0.1, 10)}
 optimizer = BayesianOptimization(
     f = propagation,
     pbounds = bounds
 )
 
 optimizer.maximize()
+print(optimizer.max)
