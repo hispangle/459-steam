@@ -18,13 +18,13 @@ k = 50 #(k determined by graph)
 totalplayers = 100000
 
 #calculate P
-A = sparse.load_npz("data/graphdata/adjacency.npz")
+A = sparse.load_npz("data/gamedata/adjacency.npz")
 A = A.tocsr()
 D_INV= sparse.dia_array(([1/float(x) if x != 0 else 0 for x in A.sum(axis = 1)], [0]), A.shape)
 P = D_INV @ A
 
 #get all ids
-allidsdata = open("data/gameids/all_usable_ids.json")
+allidsdata = open("data/gamedata/all_usable_ids.json")
 allids = json.load(allidsdata)
 allidsdata.close()
 
