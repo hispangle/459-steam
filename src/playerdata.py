@@ -4,11 +4,8 @@ import json
 
 KEY = config("STEAM_API_KEY")
 baseURL = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
-myID = 76561198841140464
-
-req = requests.get(baseURL, {"key": str(KEY), "steamid": myID, "include_appinfo": "true", "include_played_free_games": "true"})
-print(myID)
-print([game['appid'] for game in req.json()['response']['games']])
+#myID = 76561198841140464
+#req = requests.get(baseURL, {"key": str(KEY), "steamid": myID, "include_appinfo": "true", "include_played_free_games": "true"})
 
 
 #get discovered players
@@ -17,7 +14,7 @@ try:
     discoveredplayers = json.load(playerslist1)
     playerslist1.close()
 except:
-    discoveredplayers = [76561198841140464]
+    discoveredplayers = []
 
 #get analyzed players
 try:
@@ -38,11 +35,11 @@ except:
 #get player info
 try:
     info = open("data/playerdata/player_info.json")
-    playerinfo = json.load(indexed)
+    playerinfo = json.load(info)
     info.close() 
 except:
     playerinfo = {}
-
+indexedplayers = []
 players = list(set(analyzedplayers).union(set(discoveredplayers)).difference(set(indexedplayers)))
 saveinterval = 1000
 for i in range(len(players)):
@@ -50,9 +47,10 @@ for i in range(len(players)):
         print("i:", i)
     
     id = players[i]
-    req = requests.get(baseURL, {"key": str(KEY), "steamid": myID, "include_appinfo": "true", "include_played_free_games": "true"})
+    req = requests.get(baseURL, {"key": str(KEY), "steamid": id, "include_appinfo": "true", "include_played_free_games": "true"})
     if req.ok:
-        playerinfo[id] = [game['appid'] for game in req.json()['response']['games']]
+        if 'games' in req.json()['response']:
+            playerinfo[id] = [game['appid'] for game in req.json()['response']['games']]
         indexedplayers.append(id)
     
     if i % saveinterval == 0:

@@ -23,7 +23,7 @@ except:
 
 i = 0
 save_freq = 100
-num_needed = 10000
+num_needed = 1000000
 print(len(discoveredplayers))
 print(len(analyzedplayers))
 while len(discoveredplayers) != 0:

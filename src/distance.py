@@ -1,7 +1,5 @@
 import json
 from scipy import sparse
-import math
-import os
 import heapq
 from typing import List, Tuple
 
