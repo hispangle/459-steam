@@ -97,7 +97,7 @@ row = indices[0]
 col = indices[1]
 data = [1] * len(row)
 A = sparse.csr_array((data, (row, col)))
-sparse.save_npz("data/gamedata/adjacency.npz", A)
+sparse.save_npz("data/gamedata/adjacency_" + str(k) + ".npz", A)
 
 print()
 print("saved")
