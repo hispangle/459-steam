@@ -63,15 +63,15 @@ allids = json.load(allidsdata)
 allidsdata.close()
 
 #parameters and variables
-k = 10
-num_cores = 6
+k = 50
+num_cores = 3
 lowerbound = -99999999999999999
 
-
+print("k:", k)
 #computes distances of two lists
 def list_diff(info1, info2, key):
   if key not in info1.keys() or key not in info2.keys():
-    return 1.0
+    return 2.0
 
   look1 = set(info1[key])
   look2 = set(info2[key])
@@ -81,12 +81,10 @@ def list_diff(info1, info2, key):
   return cost / (len(look1) + len(look2))
 
 #computes distance of two numbers
-def num_diff(info1, info2, key, div = False):
+def num_diff(info1, info2, key):
   if key not in info1.keys() or key not in info2.keys():
-    return 1 if div else 10
-  if info1[key] == 0 == info2[key]:
-     return 0
-  return 1 - min(info1[key], info2[key]) / max(info1[key], info2[key]) if div else abs(info1[key] - info2[key])
+    return 100
+  return abs(info1[key] - info2[key])
 
 
 #calculates distance between 2 games
@@ -98,14 +96,14 @@ def calc_dist(gameinfo1, gameinfo2):
   platcost = list_diff(gameinfo1, gameinfo2, 'platforms')
 
   metacost = num_diff(gameinfo1, gameinfo2, 'metacritic')
-  reccost = num_diff(gameinfo1, gameinfo2, 'recommendations', True)
+  reccost = num_diff(gameinfo1, gameinfo2, 'recommendations')
   datecost = num_diff(gameinfo1, gameinfo2, 'release_date')
   pricecost = num_diff(gameinfo1, gameinfo2, 'price_overview')
-  achcost = num_diff(gameinfo1, gameinfo2, 'achievements', True)
+  achcost = num_diff(gameinfo1, gameinfo2, 'achievements')
 
   #totals cost based on weights
   costs = [devcost, pubcost, genrecost, catcost, platcost, metacost, reccost, datecost, pricecost, achcost]
-  weights = [5, 5, 50, 10, 0.5, 0.05, 0.75, 0.20, 0.0025, 0.3]
+  weights = [5, 8, 35, 15, 0.25, 0.5, 0.0001, 0.15, 0.0005, 0.1]
   dist = 0
   for cost, weight in zip(costs, weights):
     dist += cost * weight

@@ -2,18 +2,20 @@ from scipy import sparse
 import json
 import random
 from bayes_opt import BayesianOptimization
+import heapq
+from typing import List, Tuple
 
 #Training params
-split = 0.8
-numwanted = 30
+split = 1
+numwanted = 50
 numplayers = 1000
 
 #ML params
 cutoff = 0.25
 k = 100 #(k determined by graph)
 
+lowerbound = -99999999999999999
 
-totalplayers = 100000
 
 #calculate P
 parallel = ""
@@ -38,7 +40,7 @@ items = list(playerinfo.items())[:numplayers]
 random.shuffle(items)
 #the last 3 games are latest
 #otherwise ordered by id
-def propagation(cutoff, acc_vs_rec_penalty, T = 30):
+def propagation(T, numrec = numwanted, playerID = None):
     #define label propagation
     def label(ids):
         row = ids
@@ -61,7 +63,10 @@ def propagation(cutoff, acc_vs_rec_penalty, T = 30):
         #get player data
         if player == '76561198841140464' or len(games) < 4:
             continue
-
+        
+        if playerID:
+            player = playerID
+            games = playerinfo[playerID]
         #change player data into id index and split
         games = [allids.index(str(game)) for game in games if str(game) in allids]
         latest = games[-3:]
@@ -72,26 +77,32 @@ def propagation(cutoff, acc_vs_rec_penalty, T = 30):
         test.extend(latest)
 
         #label
-        rec = []
         true = 0
         labels = label(train)
+        rec: List[Tuple[float, int]] = [(lowerbound, -1)] * int(numrec)
         for j in range(len(allids)):
-            if labels[j, 0] > cutoff and j not in train:
-                rec.append(j)
-            if labels[j, 0] > cutoff and j in test:
-                true += 1
+            if j not in train and labels[j, 0] > rec[0][0]:
+                heapq.heapreplace(rec, (labels[j, 0], j))
 
+
+        for game in rec:
+            if game in train:
+                true += 1
+        
         #get metrics and recomendations 
         acc = true / float(len(test))
-        recs[player] = [allids[x] for x in rec]
-        numrecs = len(rec)
-        recpenalty = min(numwanted - numrecs, 0) / float(numwanted) + numwanted/float(numrecs + 0.1)
+        recs[player] = [allids[x[1]] for x in rec if x[1] > -1]
 
         #get loss
-        loss += acc * acc_vs_rec_penalty + recpenalty
+        loss += acc
+
+        if playerID:
+            print("loss:", loss)
+            print("recs:", recs)
+            break
     return loss
 
-bounds = {'cutoff': (0, 1), 'acc_vs_rec_penalty': (0.1, 10)}
+bounds = {'T': (5, 25), 'numrec': (50, 150)}
 optimizer = BayesianOptimization(
     f = propagation,
     pbounds = bounds
@@ -99,3 +110,7 @@ optimizer = BayesianOptimization(
 
 optimizer.maximize()
 print(optimizer.max)
+
+propagation(playerID='76561198841140464', T=8)
+
+#augment rec list with friends/recent games?

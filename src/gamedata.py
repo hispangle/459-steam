@@ -34,7 +34,7 @@ def changedata(data: dict) -> dict:
     if 'metacritic' in data.keys(): data['metacritic'] = data['metacritic']['score'] 
     if 'release_date' in data.keys(): 
         if data['release_date']['coming_soon'] or data['release_date']['date'] == '':
-            data['release_date'] = 2025
+            data['release_date'] = 2029
         else:
             data['release_date'] = int(data['release_date']['date'][-4:])
     if 'achievements' in data.keys(): data['achievements'] = data['achievements']['total'] 

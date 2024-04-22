@@ -3,7 +3,7 @@ import requests
 import json
 
 KEY = config("STEAM_API_KEY")
-baseURL = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+baseURL = "https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/"
 #myID = 76561198841140464
 #req = requests.get(baseURL, {"key": str(KEY), "steamid": myID, "include_appinfo": "true", "include_played_free_games": "true"})
 
@@ -26,7 +26,7 @@ except:
 
 #get players who have info already
 try:
-    indexed = open("data/playerdata/indexed_players.json")
+    indexed = open("data/playerdata/indexed_recent_players.json")
     indexedplayers = json.load(indexed)
     indexed.close()
 except:
@@ -34,7 +34,7 @@ except:
 
 #get player info
 try:
-    info = open("data/playerdata/player_info.json")
+    info = open("data/playerdata/player_recent_info.json")
     playerinfo = json.load(info)
     info.close() 
 except:
@@ -47,18 +47,18 @@ for i in range(len(players)):
         print("i:", i)
     
     id = players[i]
-    req = requests.get(baseURL, {"key": str(KEY), "steamid": id, "include_appinfo": "true", "include_played_free_games": "true"})
+    req = requests.get(baseURL, {"key": str(KEY), "steamid": id, "count": 20})
     if req.ok:
         if 'games' in req.json()['response']:
             playerinfo[id] = [game['appid'] for game in req.json()['response']['games']]
         indexedplayers.append(id)
     
     if i % saveinterval == 0:
-        info = open("data/playerdata/player_info.json", "w")
+        info = open("data/playerdata/player_recent_info.json", "w")
         json.dump(playerinfo, info)
         info.close()
 
-        indexed = open("data/playerdata/indexed_players.json", "w")
+        indexed = open("data/playerdata/indexed__recent_players.json", "w")
         json.dump(indexedplayers, indexed)
         indexed.close()
 
