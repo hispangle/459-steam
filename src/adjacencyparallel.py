@@ -63,8 +63,8 @@ allids = json.load(allidsdata)
 allidsdata.close()
 
 #parameters and variables
-k = 50
-num_cores = 3
+k = 25
+num_cores = 6
 lowerbound = -99999999999999999
 
 print("k:", k)
@@ -103,7 +103,7 @@ def calc_dist(gameinfo1, gameinfo2):
 
   #totals cost based on weights
   costs = [devcost, pubcost, genrecost, catcost, platcost, metacost, reccost, datecost, pricecost, achcost]
-  weights = [5, 8, 35, 15, 0.25, 0.5, 0.0001, 0.15, 0.0005, 0.1]
+  weights = [3, 3, 35, 15, 0.25, 0.5, 0.0001, 0.15, 0.0005, 0.1]
   dist = 0
   for cost, weight in zip(costs, weights):
     dist += cost * weight

@@ -56,11 +56,10 @@ except:
 gameidsdata = open("data/gamedata/gameids.json")
 gameids = json.load(gameidsdata)
 gameidsdata.close()
-
 latest = index * 1000
 for i in range(latest, len(gameids)):
     if i % 1000 == 0:
-        gamesinfo = []
+        gamesinfo = {}
         print(i)
     id = gameids[i]
     try:
@@ -68,7 +67,7 @@ for i in range(latest, len(gameids)):
         if not request.ok: raise Exception(request.reason)
         gamedata = request.json()[str(id)]['data']
         if type(gamedata) is not dict: raise Exception("data not dict")
-        gamesinfo.append(changedata(gamedata))
+        gamesinfo[id] = changedata(gamedata)
     except Exception as E:
         if str(E) != "'data'":
             print(gamedata['release_date'])
@@ -85,21 +84,24 @@ for i in range(latest, len(gameids)):
         index += 1
     time.sleep(1.5)
 
-data = open("data/gamedata/chunks/gamedata_" + str(index) + ".json", "w")
-json.dump(gamesinfo, data)
-data.close()
+# data = open("data/gamedata/chunks/gamedata_" + str(index) + ".json", "w")
+# json.dump(gamesinfo, data)
+# data.close()
 
 
 allgames = {}
 allids = []
+lens = 0
 for i in range(math.ceil(len(gameids) / 1000)):
-    gamesdata = open("data/gamedata/chunks/gamedata_" + str(index) + ".json")
+    gamesdata = open("data/gamedata/chunks/gamedata_" + str(i) + ".json")
     games = json.load(gamesdata)
     gamesdata.close()
-    allgames.update(games)
-    for id in games.keys():
-        allids.append(id)
-
+    print(len(games))
+    lens += len(games)
+    #allgames.update(games)
+    #for id in games.keys():
+        #allids.append(id)
+print(lens)
 allgamedata = open("data/gamedata/allgamedata.json", "w")
 json.dump(allgames, allgamedata)
 allgamedata.close()
