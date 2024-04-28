@@ -1,6 +1,7 @@
 from decouple import config
 import requests
 import json
+import random
 
 KEY = config("STEAM_API_KEY")
 baseURL = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
@@ -26,7 +27,7 @@ except:
 
 #get players who have info already
 try:
-    indexed = open("data/playerdata/indexed_free_players.json")
+    indexed = open("data/playerdata/indexed_time_players.json")
     indexedplayers = json.load(indexed)
     indexed.close()
 except:
@@ -34,13 +35,14 @@ except:
 
 #get player info
 try:
-    info = open("data/playerdata/player_free_info.json")
+    info = open("data/playerdata/player_time_info.json")
     playerinfo = json.load(info)
     info.close() 
 except:
     playerinfo = {}
 
 players = list(set(analyzedplayers).union(set(discoveredplayers)).difference(set(indexedplayers)))
+random.shuffle(players)
 if 76561198841140464 in players:
     index = players.index(76561198841140464)
     players[index] = players[0]
@@ -52,18 +54,18 @@ for i in range(len(players)):
         print("i:", i)
     
     id = players[i]
-    req = requests.get(baseURL, {"key": str(KEY), "steamid": id, "include_appinfo": "true", "include_played_free_games": "false"})
+    req = requests.get(baseURL, {"key": str(KEY), "steamid": id, "include_appinfo": "true"})
     if req.ok:
         if 'games' in req.json()['response']:
-            playerinfo[id] = [game['appid'] for game in req.json()['response']['games']]
+            playerinfo[id] = [(game['appid'], game['playtime_forever']) for game in req.json()['response']['games']]
         indexedplayers.append(id)
     
     if i % saveinterval == 0:
-        info = open("data/playerdata/player_free_info.json", "w")
+        info = open("data/playerdata/player_time_info.json", "w")
         json.dump(playerinfo, info)
         info.close()
 
-        indexed = open("data/playerdata/indexed_free_players.json", "w")
+        indexed = open("data/playerdata/indexed_time_players.json", "w")
         json.dump(indexedplayers, indexed)
         indexed.close()
 

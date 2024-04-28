@@ -7,12 +7,12 @@ from typing import List, Tuple
 import math
 
 #Training params
-split = 1
+split = 0.8
 numwanted = 25
 numplayers = 100
 
 #ML params
-k = 50 #(k determined by graph)
+k = 25 #(k determined by graph)
 print("k:", k)
 
 lowerbound = -99999999999999999
@@ -32,12 +32,13 @@ allidsdata.close()
 
 
 #get labelled nodes
-info = open("data/playerdata/player_free_info.json")
+info = open("data/playerdata/player_info.json")
 playerinfo = json.load(info)
 info.close() 
 
 items = list(playerinfo.items())[:numplayers]
 random.shuffle(items)
+print(len(items))
 #the last 3 games are latest
 #otherwise ordered by id
 def propagation(T = 6, numrec = numwanted, playerID = None, khat = k):
@@ -62,14 +63,14 @@ def propagation(T = 6, numrec = numwanted, playerID = None, khat = k):
     def label(ids):
         row = ids
         row.append(len(allids) - 1)
-        col = [0] * len(ids)
-        data = [1] * len(ids)
+        col = [0] * len(row)
+        data = [1] * len(row)
         data[-1] = 0
         y0 = sparse.csc_array((data, (row, col)))
         y = y0.todense()
         for _ in range(int(T)):
             y = P @ y
-            for i in ids:
+            for i in zip(ids):
                 y[i, 0] = 1
         return y
 
@@ -79,20 +80,22 @@ def propagation(T = 6, numrec = numwanted, playerID = None, khat = k):
     neg = 0
     for player, games in items:
         #get player data
-        if len(games) < 4:
-            neg += 1
-            continue
+        
         
         if playerID:
             player = playerID
             games = playerinfo[playerID]
-        #change player data into id index and split
-        games = [allids.index(str(game)) for game in games if str(game) in allids]
-        shuffled = games
-        random.shuffle(shuffled)
-        train = shuffled[:int(split * len(shuffled))]
-        test = shuffled[int(split * len(shuffled)):]
 
+        #change player data into id index and split
+        shuffle = games
+        random.shuffle(shuffle)
+        shuffled = [allids.index(str(game)) for game in shuffle if str(game) in allids]
+        testsize = int(max(1, split * len(shuffled)))
+        train = shuffled[:testsize]
+        test = shuffled[testsize:]
+        if len(shuffled) < 1/(1 - split):
+            neg += 1
+            continue
         #label
         true = 0
         labels = label(train)
@@ -116,8 +119,7 @@ def propagation(T = 6, numrec = numwanted, playerID = None, khat = k):
             if game in helpers:
                 help += 1
         #get metrics and recomendations 
-        
-        acc = math.exp(help / (len(test) + 0.0000000000001))
+        acc = help
         recs[player] = [allids[x[1]] for x in rec if x[1] > -1]
 
         #get loss
@@ -130,13 +132,13 @@ def propagation(T = 6, numrec = numwanted, playerID = None, khat = k):
     
     return loss / (numplayers - neg)
 
-# bounds = {'khat':(0, 3.99999)}
-# optimizer = BayesianOptimization(
-#     f = propagation,
-#     pbounds = bounds
-# )
+bounds = {'khat':(0, 3.99999), 'T': (5, 20)}
+optimizer = BayesianOptimization(
+    f = propagation,
+    pbounds = bounds
+)
 
-# optimizer.maximize(init_points=10, n_iter=40)
-# print(optimizer.max)
+optimizer.maximize(init_points=10, n_iter=40)
+print(optimizer.max)
 
 propagation(playerID='76561198841140464', T=6)
